@@ -81,9 +81,20 @@
 
       this.$.wrapper.style = '';
 
+      var stamp = Date.now();
+      var elThis = this;
+
+      window['ironPhotoViewerImageLoaded_' + stamp] = function () {
+        elThis.fire('load', { img: window.event.target, url: window.event.target.src }, { bubbles: false });
+      };
+
+      window['ironPhotoViewerImageError_' + stamp] = function (e) {
+        elThis.fire('error', { img: window.event.target, url: window.event.target.src }, { bubbles: false });
+      };
+
       this.$.wrapper.innerHTML = images.map(function (image) {
         return '<div class="swiper-slide"><div class="swiper-zoom-container">' +
-          '<img src="' + image + '"></div></div>';
+          '<img src="' + image + '" onload="ironPhotoViewerImageLoaded_' + stamp + '()" onerror="ironPhotoViewerImageError_' + stamp + '()" crossOrigin="true"></div></div>';
       }).join('');
 
       this.$.container.classList.add('visible');
