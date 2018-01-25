@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="../../bower_components/swiper/dist/css/swiper.min.css">
+<link rel="stylesheet" href="../swiper/dist/css/swiper.min.css">
 
 <style>
   .swiper-container.iron-photo-viewer {
@@ -16,7 +16,8 @@
     margin-top: 50px;
     height: calc(100% - 80px);
   }
-  .swiper-container.iron-photo-viewer .swiper-button-close {
+  .swiper-container.iron-photo-viewer .swiper-button-close,
+  .swiper-container.iron-photo-viewer .swiper-button-edit {
     position: absolute;
     top: 13px;
     right: 12px;
@@ -25,7 +26,8 @@
     z-index: 2;
     cursor: pointer;
   }
-  .swiper-container.iron-photo-viewer .swiper-button-close:before {
+  .swiper-container.iron-photo-viewer .swiper-button-close:before,
+  .swiper-container.iron-photo-viewer .swiper-button-edit:before {
     content: '×';
     display: block;
     width: 100%;
@@ -35,6 +37,16 @@
     color: white;
     font-size: 36px;
     font-weight: 200;
+  }
+  .swiper-container.iron-photo-viewer .swiper-button-edit {
+    left: 13px;
+  }
+  .swiper-container.iron-photo-viewer .swiper-button-edit:before {
+    content: '✎' !important;
+    font-size: 24px !important;
+  }
+  .swiper-container.iron-photo-viewer .swiper-button-edit.done:before {
+    content: '✓' !important;
   }
 </style>
 
@@ -61,13 +73,14 @@
       this.$.container.appendChild(this.$.pagination);
       this.$.pagination.className = 'swiper-pagination swiper-pagination-white';
 
-      ['prev', 'next', 'close'].forEach(function (button) {
+      ['prev', 'next', 'close', 'edit'].forEach(function (button) {
         this.$[button] = document.createElement('div');
         this.$.container.appendChild(this.$[button]);
         this.$[button].className = 'swiper-button-' + button + ' swiper-button-white';
       }.bind(this));
 
       this.$.close.addEventListener('click', this.close.bind(this));
+      this.$.edit.addEventListener('click', this.edit.bind(this));
     },
 
     view: function (images, index) {
@@ -111,7 +124,75 @@
     close: function (e) {
       e.preventDefault();
       e.stopPropagation();
+      this.edit(null, 'stop');
       this.$.container.classList.remove('visible');
+      this.fire('iron-photo-viewer-close');
+
+      if (this.$.swiper) {
+        this.$.swiper.destroy();
+        delete this.$.swiper;
+      }
+    },
+
+    edit: function (e, stop) {
+      var slide = this.$.container.querySelector('.swiper-slide-active .swiper-zoom-container');
+      var img = slide.querySelector('img');
+      var buttons = ['nextButton', 'prevButton', 'pagination'].map(function (name) {
+        return this.$.swiper.params[name];
+      }.bind(this));
+
+      if (this.$.editor) {
+        if (!stop) {
+          var data = this.$.editor.getData();
+
+          this.fire('iron-photo-edited', {
+            index: this.$.swiper.activeIndex,
+            data: data
+          });
+
+          img.src = data;
+        }
+
+        this.$.swiper.params.onlyExternal = false;
+        this.$.swiper.zoom.init();
+        this.$.swiper.zoom.scale = 2;
+        this.$.swiper.zoom.toggleZoom(this.$.swiper);
+
+        buttons.forEach(function (node) {
+          node.style.display = '';
+        });
+
+        slide.removeChild(this.$.editor);
+        delete this.$.editor;
+
+        this.$.edit.classList.remove('done');
+        img.style.display = '';
+
+        return;
+      }
+      else if (stop) {
+        return;
+      }
+
+      this.$.editor = document.createElement('iron-signature-pad');
+      this.$.editor.set('width', img.clientWidth);
+      this.$.editor.set('height', img.clientHeight);
+      this.$.editor.set('backgroundImage', img);
+      this.$.editor.render();
+
+      img.style.display = 'none';
+      slide.appendChild(this.$.editor);
+
+      this.$.edit.classList.add('done');
+
+      this.$.swiper.params.onlyExternal = true;
+      this.$.swiper.zoom.scale = 2;
+      this.$.swiper.zoom.toggleZoom(this.$.swiper);
+      this.$.swiper.zoom.destroy();
+
+      buttons.forEach(function (node) {
+        node.style.display = 'none';
+      });
     }
   });
 
