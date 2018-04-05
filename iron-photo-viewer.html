@@ -191,7 +191,10 @@
         delete this.$.editor;
 
         this.$.edit.classList.remove('done');
-        img.style.display = '';
+
+        this.async(function () {
+          img.style.display = '';
+        }, 100);
 
         return;
       }
