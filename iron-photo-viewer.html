@@ -122,12 +122,20 @@
       var stamp = Date.now();
       var elThis = this;
 
-      var onload = function () {
-        elThis.fire('load', { img: window.event.target, url: window.event.target.src }, { bubbles: false });
+      var onload = function (e) {
+        var target = (e && e.target) || (window.event && window.event.target);
+
+        if (target) {
+          elThis.fire('load', { img: target, url: target.src }, { bubbles: false });
+        }
       };
 
       var onerror = function (e) {
-        elThis.fire('error', { img: window.event.target, url: window.event.target.src }, { bubbles: false });
+        var target = (e && e.target) || (window.event && window.event.target);
+
+        if (target) {
+          elThis.fire('error', { img: target, url: target.src }, { bubbles: false });
+        }
       };
 
       this.$.wrapper.innerHTML = images.map(function (image) {
