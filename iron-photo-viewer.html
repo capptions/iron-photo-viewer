@@ -140,7 +140,7 @@
 
       this.$.wrapper.innerHTML = images.map(function (image) {
         return '<div class="swiper-slide"><div class="swiper-zoom-container">' +
-          '<img src="' + image + '" crossOrigin="true"></div></div>';
+          '<img src="' + image + '" crossOrigin="anonymous"></div></div>';
       }).join('');
 
       var img = this.$.wrapper.querySelectorAll('img');
@@ -176,6 +176,11 @@
     edit: function (e, stop) {
       var slide = this.$.container.querySelector('.swiper-slide-active .swiper-zoom-container');
       var img = slide.querySelector('img');
+
+      if (!img.naturalWidth || !img.naturalHeight) {
+        return;
+      }
+
       var buttons = ['nextButton', 'prevButton', 'pagination'].map(function (name) {
         return this.$.swiper.params[name];
       }.bind(this));
