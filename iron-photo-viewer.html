@@ -139,6 +139,10 @@
       };
 
       this.$.wrapper.innerHTML = images.map(function (image) {
+        if (/^http/.test(image)) {
+          image = image.concat('&t=', Date.now());
+        }
+
         return '<div class="swiper-slide"><div class="swiper-zoom-container">' +
           '<img src="' + image + '" crossOrigin="anonymous"></div></div>';
       }).join('');
