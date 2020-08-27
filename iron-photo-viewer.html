@@ -98,6 +98,16 @@
       this.$.edit.addEventListener('click', this.edit.bind(this));
 
       this.setEdit(this.editable);
+      this._closeHandler = (function (e) {
+        if (e && e.preventDefault) {
+          e.preventDefault();
+        }
+        if (e && e.stopPropagation) {
+          e.stopPropagation();
+        }
+
+        this.close();
+      }).bind(this);
     },
 
     setEdit: function (editable) {
@@ -162,11 +172,20 @@
         nextButton: this.$.next,
         prevButton: this.$.prev
       });
+
+      document.removeEventListener('backbutton', this._closeHandler);
+      document.addEventListener('backbutton', this._closeHandler);
     },
 
     close: function (e) {
-      e.preventDefault();
-      e.stopPropagation();
+      if (e && e.preventDefault) {
+        e.preventDefault();
+      }
+      if (e && e.stopPropagation) {
+        e.stopPropagation();
+      }
+
+      document.removeEventListener('backbutton', this._closeHandler);
       this.edit(null, 'stop');
       this.$.container.classList.remove('visible');
       this.fire('iron-photo-viewer-close');
