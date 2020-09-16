@@ -3,8 +3,9 @@
 <style>
   .swiper-container.iron-photo-viewer {
     width: 100vw;
-    height: 100vh;
+    height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
     background: black;
+    border-top: env(safe-area-inset-top) solid black;
     display: none;
     z-index: 200;
   }
